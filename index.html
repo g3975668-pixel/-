@@ -18,7 +18,7 @@
   --over:#BB4A32; --over-bg:#F7E7E1; --amber:#B07A26; --amber-bg:#F3ECDB;
   --pro:#3D5C8C; --pro-bg:#E4EAF3;
 }
-*{ -webkit-tap-highlight-color:transparent; }
+*{ -webkit-tap-highlight-color:transparent; box-sizing:border-box; }
 html,body{ margin:0; padding:0; background:var(--paper); }
 body{
   font-family:-apple-system,BlinkMacSystemFont,system-ui,"Hiragino Sans","Segoe UI",sans-serif;
@@ -30,7 +30,6 @@ body{
 .mono{ font-family:ui-monospace,"SF Mono",Menlo,monospace; font-variant-numeric:tabular-nums; }
 .wrap{ max-width:520px; margin:0 auto; }
 button{ font-family:inherit; }
-button:focus-visible, input:focus-visible{ outline:2px solid var(--green); outline-offset:2px; }
 
 .top{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:8px; gap:10px; }
 .period{ font-size:13px; color:var(--soft); }
@@ -46,15 +45,12 @@ button:focus-visible, input:focus-visible{ outline:2px solid var(--green); outli
 .warn{ background:var(--over-bg); color:var(--over); border-radius:11px;
   padding:12px 14px; font-size:12.5px; margin-bottom:12px; line-height:1.6; }
 
-.card{ background:var(--card); border:1px solid var(--line); border-radius:16px;
-  padding:20px; margin-bottom:12px; }
-.heroLabel{ font-size:12px; color:var(--soft); letter-spacing:.06em; }
+.card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin-bottom:12px; }
+.heroLabel{ font-size:12px; color:var(--soft); letter-spacing:.04em; }
 .hero{ display:flex; align-items:baseline; gap:8px; margin-top:4px; }
 .heroNum{ font-size:42px; font-weight:600; line-height:1; }
-.heroNum.sm{ font-size:34px; }
 .heroUnit{ font-size:15px; color:var(--soft); }
-.pill{ display:inline-block; margin-top:12px; font-size:12.5px; font-weight:600;
-  padding:4px 11px; border-radius:20px; }
+.pill{ display:inline-block; margin-top:12px; font-size:12.5px; font-weight:600; padding:4px 11px; border-radius:20px; }
 .meter{ margin-top:16px; }
 .track{ position:relative; height:12px; border-radius:7px; background:var(--paper);
   border:1px solid var(--line); overflow:hidden; }
@@ -66,6 +62,20 @@ button:focus-visible, input:focus-visible{ outline:2px solid var(--green); outli
 .pace b{ color:var(--ink); font-weight:600; }
 .muted{ font-size:13px; color:var(--soft); margin-top:12px; line-height:1.6; }
 
+.mgrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+.mcard{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; }
+.mcTop{ display:flex; align-items:baseline; justify-content:space-between; }
+.mcLbl{ font-size:12px; font-weight:600; }
+.mcDir{ font-size:10px; color:var(--soft); }
+.mcNum{ font-size:25px; font-weight:600; line-height:1.1; margin-top:8px; }
+.mcNum .u{ font-size:12px; color:var(--soft); font-weight:400; margin-left:3px; }
+.mcTrack{ position:relative; height:7px; border-radius:5px; background:var(--paper);
+  border:1px solid var(--line); overflow:hidden; margin-top:10px; }
+.mcFill{ position:absolute; left:0; top:0; bottom:0; border-radius:5px 0 0 5px; transition:width .35s ease; }
+.mcMark{ position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--ink); }
+.mcSt{ font-size:10.5px; margin-top:8px; font-weight:600; }
+.mcSub{ font-size:10px; color:var(--soft); margin-top:3px; }
+
 .stats{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:var(--line);
   border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:12px; }
 .stat{ background:var(--card); padding:14px 10px; text-align:center; }
@@ -75,64 +85,56 @@ button:focus-visible, input:focus-visible{ outline:2px solid var(--green); outli
 .h{ font-size:13px; font-weight:600; color:var(--soft); margin:22px 2px 10px; }
 .hrow{ display:flex; align-items:baseline; justify-content:space-between; margin:22px 2px 10px; }
 .hrow .h{ margin:0; }
-.toggle{ border:none; background:transparent; color:var(--soft); font-size:12px;
-  cursor:pointer; text-decoration:underline; padding:0; }
+.toggle{ border:none; background:transparent; color:var(--soft); font-size:12px; cursor:pointer; text-decoration:underline; padding:0; }
 
 .daysel{ font-size:13px; color:var(--soft); margin:2px 0 10px; }
 .daysel b{ color:var(--ink); }
-.fields{ display:flex; gap:8px; }
-.fwrap{ flex:1; min-width:0; }
+.ig{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.ig .full{ grid-column:1 / -1; }
 .flab{ font-size:11px; color:var(--soft); margin-bottom:5px; }
 .field{ width:100%; border:1px solid var(--line); border-radius:11px; background:var(--card);
-  padding:12px 13px; font-size:20px; color:var(--ink); outline:none; box-sizing:border-box; }
+  padding:12px 13px; font-size:19px; color:var(--ink); outline:none; }
 .field:focus{ border-color:var(--green); box-shadow:0 0 0 3px var(--green-bg); }
 .saveBtn{ width:100%; border:none; background:var(--ink); color:#fff; border-radius:11px;
-  padding:14px; font-size:15px; font-weight:600; cursor:pointer; margin-top:9px; }
+  padding:14px; font-size:15px; font-weight:600; cursor:pointer; margin-top:10px; }
 .saveState{ font-size:11.5px; margin-top:8px; text-align:center; min-height:16px; color:var(--soft); }
 .saveState.ok{ color:var(--green); }
 .saveState.bad{ color:var(--over); font-weight:600; }
 
-.day{ display:flex; align-items:center; justify-content:space-between; gap:8px;
-  padding:11px 14px; border:1px solid var(--line); border-radius:11px; background:var(--card);
-  margin-bottom:7px; cursor:pointer; }
+.day{ display:block; padding:11px 14px; border:1px solid var(--line); border-radius:11px;
+  background:var(--card); margin-bottom:7px; cursor:pointer; }
 .day.sel{ border-color:var(--green); box-shadow:0 0 0 3px var(--green-bg); }
+.dayHead{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.dDate{ font-size:14px; }
 .day.today .dDate{ font-weight:700; }
-.dDate{ font-size:14px; flex-shrink:0; }
 .dTag{ font-size:10px; color:var(--green); background:var(--green-bg); padding:2px 7px; border-radius:10px; margin-left:8px; }
-.dVals{ display:flex; gap:12px; align-items:baseline; }
-.dK{ font-size:15px; font-weight:600; }
-.dP{ font-size:13px; color:var(--pro); font-weight:600; }
+.dKcal{ font-size:15px; font-weight:600; }
+.dMacros{ font-size:11.5px; color:var(--soft); margin-top:6px; display:flex; flex-wrap:wrap; gap:10px; }
+.dMacros .lab{ color:var(--soft); }
 .dEmpty{ color:#B7C0BA; font-size:14px; }
 
-.hist{ background:var(--card); border:1px solid var(--line); border-radius:12px;
-  padding:13px 14px; margin-bottom:8px; }
-.histTop{ display:flex; align-items:baseline; justify-content:space-between; gap:8px;
-  font-size:13px; color:var(--soft); }
-.histRow{ margin-top:10px; }
-.histLbl{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--soft); margin-bottom:5px; gap:8px; }
+.hist{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:13px 14px; margin-bottom:8px; }
+.histTop{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; font-size:13px; color:var(--soft); }
+.histRow{ margin-top:9px; }
+.histLbl{ display:flex; justify-content:space-between; font-size:11px; color:var(--soft); margin-bottom:4px; gap:8px; }
 .histLbl b{ font-weight:600; color:var(--ink); }
-.histBar{ height:6px; border-radius:4px; background:var(--paper); border:1px solid var(--line);
-  overflow:hidden; position:relative; }
-.histFill{ position:absolute; left:0; top:0; bottom:0; border-radius:4px 0 0 4px; }
+.histBar{ height:5px; border-radius:3px; background:var(--paper); border:1px solid var(--line); overflow:hidden; position:relative; }
+.histFill{ position:absolute; left:0; top:0; bottom:0; border-radius:3px 0 0 3px; }
 
 .set label{ display:block; font-size:12px; color:var(--soft); margin:14px 0 6px; }
-.set input{ width:100%; box-sizing:border-box; border:1px solid var(--line); border-radius:11px;
-  padding:12px 14px; font-size:16px; color:var(--ink); background:var(--card); outline:none; }
+.set input{ width:100%; border:1px solid var(--line); border-radius:11px; padding:12px 14px;
+  font-size:16px; color:var(--ink); background:var(--card); outline:none; }
 .set input:focus{ border-color:var(--green); box-shadow:0 0 0 3px var(--green-bg); }
-.calc{ font-size:11.5px; color:var(--soft); margin-top:7px; min-height:16px; }
+.calc{ font-size:11.5px; color:var(--soft); margin-top:7px; min-height:15px; }
 .calc b{ color:var(--ink); font-weight:600; }
 .presets{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
-.preset{ border:1px solid var(--line); background:var(--card); color:var(--ink);
-  border-radius:20px; padding:8px 14px; font-size:12.5px; cursor:pointer; }
+.preset{ border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:20px; padding:8px 14px; font-size:12.5px; cursor:pointer; }
 .note{ font-size:11.5px; color:var(--soft); line-height:1.6; margin-top:16px; }
 .actions{ display:flex; gap:8px; margin-top:20px; }
-.btnMain{ flex:1; border:none; background:var(--ink); color:#fff; border-radius:11px;
-  padding:14px; font-size:15px; font-weight:600; cursor:pointer; }
-.btnGhost{ border:1px solid var(--line); background:var(--card); color:var(--soft);
-  border-radius:11px; padding:14px 18px; font-size:15px; cursor:pointer; }
+.btnMain{ flex:1; border:none; background:var(--ink); color:#fff; border-radius:11px; padding:14px; font-size:15px; font-weight:600; cursor:pointer; }
+.btnGhost{ border:1px solid var(--line); background:var(--card); color:var(--soft); border-radius:11px; padding:14px 18px; font-size:15px; cursor:pointer; }
 .backup{ display:flex; gap:8px; margin-top:12px; }
-.backup button{ flex:1; border:1px solid var(--line); background:var(--card); color:var(--soft);
-  border-radius:11px; padding:11px; font-size:12.5px; cursor:pointer; }
+.backup button{ flex:1; border:1px solid var(--line); background:var(--card); color:var(--soft); border-radius:11px; padding:11px; font-size:12.5px; cursor:pointer; }
 
 .intro{ text-align:center; padding:12px 4px 4px; }
 .intro h1{ font-size:22px; margin:0 0 6px; }
@@ -148,76 +150,62 @@ button:focus-visible, input:focus-visible{ outline:2px solid var(--green); outli
 <script>
 "use strict";
 
+/* ---------- nutrients ---------- */
+/* dir: "ceiling" = 超えない上限（残り表示） / "floor" = 届かせたい下限（あと表示） */
+var NUTRIENTS=[
+  { id:"kcal",  label:"カロリー",   unit:"kcal", dir:"ceiling", hero:true },
+  { id:"p",     label:"タンパク質", unit:"g",    dir:"floor"   },
+  { id:"f",     label:"脂質",       unit:"g",    dir:"ceiling" },
+  { id:"c",     label:"炭水化物",   unit:"g",    dir:"ceiling" },
+  { id:"fiber", label:"食物繊維",   unit:"g",    dir:"floor"   }
+];
+function nutById(id){ for(var i=0;i<NUTRIENTS.length;i++) if(NUTRIENTS[i].id===id) return NUTRIENTS[i]; return null; }
+
 /* ---------- dates ---------- */
 function parseISO(s){ var a=s.split("-").map(Number); return new Date(a[0],a[1]-1,a[2]); }
-function toISO(d){
-  var m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0");
-  return d.getFullYear()+"-"+m+"-"+day;
-}
+function toISO(d){ var m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0"); return d.getFullYear()+"-"+m+"-"+day; }
 function stripTime(d){ return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
 function addDays(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x; }
 function diffDays(a,b){ return Math.round((stripTime(b)-stripTime(a))/86400000); }
-function fmtJP(d){
-  var w=["日","月","火","水","木","金","土"][d.getDay()];
-  return (d.getMonth()+1)+"/"+d.getDate()+"（"+w+"）";
-}
+function fmtJP(d){ var w=["日","月","火","水","木","金","土"][d.getDay()]; return (d.getMonth()+1)+"/"+d.getDate()+"（"+w+"）"; }
 function fmtShort(d){ return (d.getMonth()+1)+"/"+d.getDate(); }
 function fmtNum(n){ return Math.round(n).toLocaleString("ja-JP"); }
-function esc(s){ return String(s).replace(/[&<>"]/g,function(c){
-  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
-function normEntry(v){
-  if(v==null) return null;
-  if(typeof v==="number") return {k:v,p:null};
-  return { k: v.k!=null?v.k:null, p: v.p!=null?v.p:null };
+function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+/* entries: old could be number or {k,p}; new is {kcal,p,f,c,fiber} */
+function getVal(entry,id){
+  if(entry==null) return null;
+  if(typeof entry==="number") return id==="kcal"?entry:null;
+  if(id==="kcal" && entry.k!=null && entry.kcal==null) return Number(entry.k); /* old */
+  var v=entry[id];
+  return v==null?null:Number(v);
+}
+function entryHasAny(entry){
+  for(var i=0;i<NUTRIENTS.length;i++){ var v=getVal(entry,NUTRIENTS[i].id); if(v!=null&&v>0) return true; }
+  return false;
 }
 
 /* ---------- storage ---------- */
-var KEY="calorie-ledger-v3";
+var KEY="calorie-ledger-v4", OLD_KEY="calorie-ledger-v3";
 var storageOk=true;
-
-function probeStorage(){
-  try{
-    localStorage.setItem("__probe__","1");
-    localStorage.removeItem("__probe__");
-    return true;
-  }catch(e){ return false; }
-}
-function readState(){
-  try{
-    var raw=localStorage.getItem(KEY);
-    if(raw) return JSON.parse(raw);
-  }catch(e){}
-  return null;
-}
-function writeState(){
-  try{
-    localStorage.setItem(KEY, JSON.stringify(state));
-    return localStorage.getItem(KEY)!=null;   // read back to confirm
-  }catch(e){
-    console.error("save failed", e);
-    return false;
-  }
-}
+function probeStorage(){ try{ localStorage.setItem("__p__","1"); localStorage.removeItem("__p__"); return true; }catch(e){ return false; } }
+function readState(k){ try{ var raw=localStorage.getItem(k); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+function writeState(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); return localStorage.getItem(KEY)!=null; }catch(e){ console.error(e); return false; } }
 
 /* ---------- period logic ---------- */
-function targetsFor(cfg,days){
-  return { kcal:(Number(cfg.avgKcal)||0)*days, protein:(Number(cfg.avgProtein)||0)*days };
-}
+function targetFor(cfg,id,days){ return (Number(cfg.avg&&cfg.avg[id])||0)*days; }
 function summarize(cfg,entries){
-  var s=parseISO(cfg.startDate);
-  var days=diffDays(s,parseISO(cfg.endDate))+1;
-  var kcal=0,protein=0,entered=0;
+  var s=parseISO(cfg.startDate), days=diffDays(s,parseISO(cfg.endDate))+1;
+  var sums={}, targets={}, entered=0;
+  NUTRIENTS.forEach(function(n){ sums[n.id]=0; targets[n.id]=targetFor(cfg,n.id,days); });
   for(var i=0;i<days;i++){
-    var e=normEntry(entries[toISO(addDays(s,i))]);
+    var e=entries[toISO(addDays(s,i))];
     if(e){
-      kcal+=Number(e.k)||0; protein+=Number(e.p)||0;
-      if((Number(e.k)||0)>0||(Number(e.p)||0)>0) entered++;
+      NUTRIENTS.forEach(function(n){ var v=getVal(e,n.id); if(v!=null) sums[n.id]+=v; });
+      if(entryHasAny(e)) entered++;
     }
   }
-  var t=targetsFor(cfg,days);
-  return { startDate:cfg.startDate, endDate:cfg.endDate, days:days,
-           kcal:kcal, protein:protein, entered:entered,
-           targetKcal:t.kcal, targetProtein:t.protein };
+  return { startDate:cfg.startDate, endDate:cfg.endDate, days:days, entered:entered, sums:sums, targets:targets };
 }
 function rollForward(){
   var today=stripTime(new Date()), rolled=0;
@@ -225,97 +213,108 @@ function rollForward(){
     state.history.unshift(summarize(state.config,state.entries));
     var len=diffDays(parseISO(state.config.startDate),parseISO(state.config.endDate))+1;
     var ns=addDays(parseISO(state.config.endDate),1);
-    state.config={ startDate:toISO(ns), endDate:toISO(addDays(ns,len-1)),
-                   avgKcal:state.config.avgKcal, avgProtein:state.config.avgProtein };
+    state.config={ startDate:toISO(ns), endDate:toISO(addDays(ns,len-1)), avg:state.config.avg };
     rolled++;
   }
   return rolled;
 }
 
-/* ---------- app state ---------- */
+/* ---------- state ---------- */
 var state={config:null,entries:{},history:[]};
 var rolledCount=0, showHistory=false, settingsOpen=false;
 var selDate=toISO(new Date()), saveMsg="", saveCls="";
 
-/* ---------- setup screen ---------- */
-function renderSetup(){
-  var today=toISO(new Date());
-  var c=state.config;
-  var s=c?c.startDate:today;
-  var e=c?c.endDate:toISO(addDays(new Date(),6));
-  var ak=c&&c.avgKcal?c.avgKcal:"";
-  var ap=c&&c.avgProtein?c.avgProtein:"";
-
-  var html="";
-  if(!storageOk) html+='<div class="warn"><b>データを保存できません。</b><br>'+
-    'この画面を閉じると入力内容は消えます。Safariのプライベートブラウズを使っている場合は、'+
-    '通常のタブで開き直してください。</div>';
-  if(!c) html+='<div class="intro"><h1>カロリー家計簿</h1>'+
-    '<p>期間と、1日あたりの目標を決めましょう。</p>'+
-    '<p>毎日の合計を入力すれば、累計とペースが見えます。</p></div>';
-  else html+='<div class="h" style="margin:4px 2px 0">設定</div>';
-
-  html+='<label for="fStart">期間の開始日</label>'+
-        '<input type="date" id="fStart" value="'+s+'">'+
-        '<label for="fEnd">期間の終了日</label>'+
-        '<input type="date" id="fEnd" value="'+e+'">'+
-        '<div class="presets">'+
-          '<button class="preset" data-preset="7">今日から1週間</button>'+
-          '<button class="preset" data-preset="14">2週間</button>'+
-          '<button class="preset" data-preset="30">1ヶ月</button>'+
-        '</div>'+
-        '<label for="fAvgK">1日の平均カロリー（上限の目安）</label>'+
-        '<input type="number" inputmode="numeric" id="fAvgK" placeholder="例：2000" value="'+ak+'">'+
-        '<div class="calc" id="calcK"></div>'+
-        '<label for="fAvgP">1日の平均タンパク質（下限の目安・g）</label>'+
-        '<input type="number" inputmode="numeric" id="fAvgP" placeholder="例：120" value="'+ap+'">'+
-        '<div class="calc" id="calcP"></div>'+
-        '<div class="note" id="setNote"></div>'+
-        '<div class="actions">'+
-          '<button class="btnMain" data-act="saveSettings">保存する</button>'+
-          (c?'<button class="btnGhost" data-act="cancelSettings">やめる</button>':'')+
-        '</div>';
-
-  if(c) html+='<div class="h" style="margin-top:26px">データの控え</div>'+
-    '<div class="backup">'+
-      '<button data-act="export">書き出す</button>'+
-      '<button data-act="import">読み込む</button>'+
-    '</div>'+
-    '<div class="note">Safariの履歴やデータを消すと記録も消えます。'+
-    'ときどき書き出してファイルに残しておくと安心です。</div>';
-
-  document.getElementById("app").className="wrap set";
-  document.getElementById("app").innerHTML=html;
-  updateCalc();
+/* ---------- status for one nutrient ---------- */
+function statusFor(n,sum,target,timeFrac){
+  var frac=target?Math.min(sum/target,1):0;
+  if(n.dir==="ceiling"){
+    var over=target&&sum>target, fast=target&&frac>timeFrac&&!over;
+    return {
+      frac:frac, color:over?"var(--over)":(fast?"var(--amber)":"var(--green)"),
+      heroNum:target?Math.abs(target-sum):sum,
+      heroUnit:(over?n.unit+" 超過":n.unit),
+      labelSuffix:target?"・残り":"・累計",
+      pillText:over?"目標を超えています":(fast?"ペースがやや速めです":"ペース内で順調です"),
+      pillBg:over?"var(--over-bg)":(fast?"var(--amber-bg)":"var(--green-bg)"),
+      pillFg:over?"var(--over)":(fast?"var(--amber)":"var(--green)"),
+      paceVerb:"まで", done:false
+    };
+  } else {
+    var done=target&&sum>=target, behind=target&&frac<timeFrac&&!done;
+    return {
+      frac:frac, color:done?"var(--green)":(behind?"var(--amber)":"var(--pro)"),
+      heroNum:target?Math.max(target-sum,0):sum,
+      heroUnit:n.unit,
+      labelSuffix:target?"・あと":"・累計",
+      pillText:done?"目標を達成しました":(behind?"やや不足しています":"ペース内で順調です"),
+      pillBg:done?"var(--green-bg)":(behind?"var(--amber-bg)":"var(--pro-bg)"),
+      pillFg:done?"var(--green)":(behind?"var(--amber)":"var(--pro)"),
+      paceVerb:"必要", done:done
+    };
+  }
 }
 
+/* ---------- setup ---------- */
+function renderSetup(){
+  var today=toISO(new Date()), c=state.config;
+  var s=c?c.startDate:today, e=c?c.endDate:toISO(addDays(new Date(),6));
+  var html="";
+  if(!storageOk) html+='<div class="warn"><b>データを保存できません。</b><br>この画面を閉じると入力内容は消えます。Safariのプライベートブラウズを使っている場合は、通常のタブで開き直してください。</div>';
+  if(!c) html+='<div class="intro"><h1>カロリー家計簿</h1><p>期間と、1日あたりの目標を決めましょう。</p><p>毎日の合計を入力すれば、累計とペースが見えます。</p></div>';
+  else html+='<div class="h" style="margin:4px 2px 0">設定</div>';
+
+  html+='<label for="fStart">期間の開始日</label><input type="date" id="fStart" value="'+s+'">'+
+        '<label for="fEnd">期間の終了日</label><input type="date" id="fEnd" value="'+e+'">'+
+        '<div class="presets"><button class="preset" data-preset="7">今日から1週間</button>'+
+        '<button class="preset" data-preset="14">2週間</button>'+
+        '<button class="preset" data-preset="30">1ヶ月</button></div>';
+
+  NUTRIENTS.forEach(function(n){
+    var v=(c&&c.avg&&c.avg[n.id])?c.avg[n.id]:"";
+    var hint=n.dir==="ceiling"?"上限の目安":"下限の目安";
+    var ph=n.id==="kcal"?"例：2000":(n.id==="p"?"例：120":(n.id==="fiber"?"例：20":""));
+    html+='<label for="avg_'+n.id+'">1日の平均 '+n.label+'（'+hint+'・'+n.unit+'）</label>'+
+          '<input type="number" inputmode="numeric" id="avg_'+n.id+'" data-nid="'+n.id+'" placeholder="'+ph+'" value="'+v+'">'+
+          '<div class="calc" id="calc_'+n.id+'"></div>';
+  });
+
+  html+='<div class="note" id="setNote"></div>'+
+        '<div class="actions"><button class="btnMain" data-act="saveSettings">保存する</button>'+
+        (c?'<button class="btnGhost" data-act="cancelSettings">やめる</button>':'')+'</div>';
+
+  if(c) html+='<div class="h" style="margin-top:26px">データの控え</div>'+
+    '<div class="backup"><button data-act="export">書き出す</button><button data-act="import">読み込む</button></div>'+
+    '<div class="note">Safariの履歴やデータを消すと記録も消えます。ときどき書き出してファイルに残しておくと安心です。</div>';
+
+  var app=document.getElementById("app"); app.className="wrap set"; app.innerHTML=html;
+  updateCalc();
+}
 function draftDays(){
   var s=document.getElementById("fStart").value, e=document.getElementById("fEnd").value;
-  if(!s||!e) return 0;
-  if(parseISO(e)<parseISO(s)) return -1;
+  if(!s||!e) return 0; if(parseISO(e)<parseISO(s)) return -1;
   return diffDays(parseISO(s),parseISO(e))+1;
 }
 function updateCalc(){
   var d=draftDays();
-  var ak=Number(document.getElementById("fAvgK").value)||0;
-  var ap=Number(document.getElementById("fAvgP").value)||0;
-  document.getElementById("calcK").innerHTML =
-    (d>0&&ak)? d+"日間の合計目標：<b class='mono'>"+fmtNum(ak*d)+" kcal</b>" : "";
-  document.getElementById("calcP").innerHTML =
-    (d>0&&ap)? d+"日間の合計目標：<b class='mono'>"+fmtNum(ap*d)+" g</b>" : "";
-  document.getElementById("setNote").textContent =
-    d<0 ? "終了日は開始日より後にしてください。"
-        : "この期間は"+d+"日間です。終わると同じ長さの期間が自動で始まり、前の期間は履歴に残ります。"+
-          "カロリーは超えないよう、タンパク質は届くように追いかけます。";
+  NUTRIENTS.forEach(function(n){
+    var el=document.getElementById("calc_"+n.id); if(!el) return;
+    var av=Number(document.getElementById("avg_"+n.id).value)||0;
+    el.innerHTML=(d>0&&av)?(d+"日間の合計目標："+"<b class='mono'>"+fmtNum(av*d)+" "+n.unit+"</b>"):"";
+  });
+  var note=document.getElementById("setNote");
+  if(note) note.textContent = d<0 ? "終了日は開始日より後にしてください。"
+    : "この期間は"+d+"日間です。終わると同じ長さの期間が自動で始まり、前の期間は履歴に残ります。空欄の項目は追いかけません。";
 }
 
-/* ---------- main screen ---------- */
-function meterHTML(frac,color,timeFrac,showMarker){
+/* ---------- main ---------- */
+function bigMeter(frac,color,timeFrac,showMarker){
   var h='<div class="track"><div class="fill" style="width:'+(frac*100)+'%;background:'+color+'"></div>';
-  if(showMarker){
-    h+='<div class="marker" style="left:'+(timeFrac*100)+'%"></div>'+
-       '<div class="mcap" style="left:'+(timeFrac*100)+'%">今日の目安</div>';
-  }
+  if(showMarker) h+='<div class="marker" style="left:'+(timeFrac*100)+'%"></div><div class="mcap" style="left:'+(timeFrac*100)+'%">今日の目安</div>';
+  return h+'</div>';
+}
+function smallMeter(frac,color,timeFrac,showMarker){
+  var h='<div class="mcTrack"><div class="mcFill" style="width:'+(frac*100)+'%;background:'+color+'"></div>';
+  if(showMarker) h+='<div class="mcMark" style="left:'+(timeFrac*100)+'%"></div>';
   return h+'</div>';
 }
 
@@ -324,125 +323,94 @@ function renderMain(){
   var start=parseISO(cfg.startDate), end=parseISO(cfg.endDate);
   var todayISO=toISO(new Date()), today=stripTime(new Date());
   var periodDays=diffDays(start,end)+1;
-
-  var elapsed = today<start ? 0 : (today>end ? periodDays : diffDays(start,today)+1);
+  var elapsed = today<start?0:(today>end?periodDays:diffDays(start,today)+1);
   var remainDays=Math.max(periodDays-elapsed,0);
+  var timeFrac=periodDays?Math.min(elapsed/periodDays,1):0;
+  var showMarker=elapsed>0&&elapsed<periodDays;
 
-  var sumK=0,sumP=0,enteredDays=0,days=[];
+  var sums={}, entered=0, days=[];
+  NUTRIENTS.forEach(function(n){ sums[n.id]=0; });
   for(var i=0;i<periodDays;i++){
-    var d=addDays(start,i), iso=toISO(d), e=normEntry(state.entries[iso]);
-    if(e){
-      sumK+=Number(e.k)||0; sumP+=Number(e.p)||0;
-      if((Number(e.k)||0)>0||(Number(e.p)||0)>0) enteredDays++;
-    }
+    var d=addDays(start,i), iso=toISO(d), e=state.entries[iso];
+    if(e){ NUTRIENTS.forEach(function(n){ var v=getVal(e,n.id); if(v!=null) sums[n.id]+=v; }); if(entryHasAny(e)) entered++; }
     days.push({iso:iso,date:d,e:e});
   }
 
-  var t=targetsFor(cfg,periodDays), tK=t.kcal, tP=t.protein;
-  var timeFrac=periodDays?Math.min(elapsed/periodDays,1):0;
-  var showMarker = elapsed>0 && elapsed<periodDays;
-
-  /* calories = ceiling */
-  var kFrac=tK?Math.min(sumK/tK,1):0;
-  var kOver=tK&&sumK>tK, kFast=tK&&kFrac>timeFrac&&!kOver;
-  var kColor="var(--green)", kText="ペース内で順調です", kPill="background:var(--green-bg);color:var(--green)";
-  if(kOver){ kColor="var(--over)"; kText="目標を超えています"; kPill="background:var(--over-bg);color:var(--over)"; }
-  else if(kFast){ kColor="var(--amber)"; kText="ペースがやや速めです"; kPill="background:var(--amber-bg);color:var(--amber)"; }
-  var kPace=(tK&&remainDays>0)?(tK-sumK)/remainDays:null;
-
-  /* protein = floor */
-  var pFrac=tP?Math.min(sumP/tP,1):0;
-  var pDone=tP&&sumP>=tP, pBehind=tP&&pFrac<timeFrac&&!pDone;
-  var pColor="var(--pro)", pText="ペース内で順調です", pPill="background:var(--pro-bg);color:var(--pro)";
-  if(pDone){ pColor="var(--green)"; pText="目標を達成しました"; pPill="background:var(--green-bg);color:var(--green)"; }
-  else if(pBehind){ pColor="var(--amber)"; pText="やや不足しています"; pPill="background:var(--amber-bg);color:var(--amber)"; }
-  var pPace=(tP&&remainDays>0)?Math.max((tP-sumP)/remainDays,0):null;
-
   var h="";
-  h+='<div class="top"><div class="period"><b>'+fmtJP(start)+'</b> → <b>'+fmtJP(end)+
-     '</b> ・全'+periodDays+'日</div>'+
+  h+='<div class="top"><div class="period"><b>'+fmtJP(start)+'</b> → <b>'+fmtJP(end)+'</b> ・全'+periodDays+'日</div>'+
      '<button class="gear" data-act="openSettings">設定</button></div>';
+  if(!storageOk) h+='<div class="warn"><b>データを保存できません。</b><br>この画面を閉じると入力内容は消えます。Safariのプライベートブラウズを使っている場合は、通常のタブで開き直してください。</div>';
+  if(rolledCount>0) h+='<div class="banner"><span>新しい期間が始まりました。'+(rolledCount===1?"前の期間":"前の"+rolledCount+"期間")+'は履歴に残しています。</span><button class="bx" data-act="dismiss" aria-label="閉じる">×</button></div>';
 
-  if(!storageOk) h+='<div class="warn"><b>データを保存できません。</b><br>'+
-    'この画面を閉じると入力内容は消えます。Safariのプライベートブラウズを使っている場合は、'+
-    '通常のタブで開き直してください。</div>';
-
-  if(rolledCount>0) h+='<div class="banner"><span>新しい期間が始まりました。'+
-    (rolledCount===1?"前の期間":"前の"+rolledCount+"期間")+'は履歴に残しています。</span>'+
-    '<button class="bx" data-act="dismiss" aria-label="閉じる">×</button></div>';
-
-  /* calorie card */
-  h+='<div class="card"><div class="heroLabel">'+(tK?"カロリー・残り":"カロリー・累計")+'</div>'+
-     '<div class="hero"><span class="heroNum mono"'+(kOver?' style="color:var(--over)"':'')+'>'+
-     (tK?fmtNum(Math.abs(tK-sumK)):fmtNum(sumK))+'</span>'+
-     '<span class="heroUnit">'+((tK&&sumK>tK)?"kcal 超過":"kcal")+'</span></div>';
-  if(tK){
-    h+='<span class="pill" style="'+kPill+'">'+kText+'</span>'+
-       '<div class="meter">'+meterHTML(kFrac,kColor,timeFrac,showMarker)+
-       '<div class="mlabel"><span class="mono">'+fmtNum(sumK)+' 摂取</span>'+
-       '<span class="mono">目標 '+fmtNum(tK)+'</span></div></div>';
-    if(kPace!=null) h+='<div class="pace">残り'+remainDays+'日、1日あたり <b class="mono">'+
-       fmtNum(Math.max(kPace,0))+' kcal</b> まで</div>';
-  } else {
-    h+='<div class="muted">設定で1日の平均カロリーを入れると、残りとペースが表示されます。</div>';
-  }
+  /* kcal big card */
+  var kn=nutById("kcal"), kt=targetFor(cfg,"kcal",periodDays), ks=statusFor(kn,sums.kcal,kt,timeFrac);
+  h+='<div class="card"><div class="heroLabel">カロリー'+(kt?ks.labelSuffix:"・累計")+'</div>'+
+     '<div class="hero"><span class="heroNum mono" style="color:'+(kt&&sums.kcal>kt?"var(--over)":"var(--ink)")+'">'+
+     fmtNum(kt?ks.heroNum:sums.kcal)+'</span><span class="heroUnit">'+(kt?ks.heroUnit:"kcal")+'</span></div>';
+  if(kt){
+    h+='<span class="pill" style="background:'+ks.pillBg+';color:'+ks.pillFg+'">'+ks.pillText+'</span>'+
+       '<div class="meter">'+bigMeter(ks.frac,ks.color,timeFrac,showMarker)+
+       '<div class="mlabel"><span class="mono">'+fmtNum(sums.kcal)+' 摂取</span><span class="mono">目標 '+fmtNum(kt)+'</span></div></div>';
+    if(remainDays>0){ var kp=(kt-sums.kcal)/remainDays; h+='<div class="pace">残り'+remainDays+'日、1日あたり <b class="mono">'+fmtNum(Math.max(kp,0))+' kcal</b> まで</div>'; }
+  } else h+='<div class="muted">設定で1日の平均カロリーを入れると、残りとペースが表示されます。</div>';
   h+='</div>';
 
-  /* protein card */
-  h+='<div class="card"><div class="heroLabel">'+(tP?"タンパク質・あと":"タンパク質・累計")+'</div>'+
-     '<div class="hero"><span class="heroNum sm mono"'+(pDone?' style="color:var(--green)"':'')+'>'+
-     (tP?fmtNum(Math.max(tP-sumP,0)):fmtNum(sumP))+'</span><span class="heroUnit">g</span></div>';
-  if(tP){
-    h+='<span class="pill" style="'+pPill+'">'+pText+'</span>'+
-       '<div class="meter">'+meterHTML(pFrac,pColor,timeFrac,showMarker)+
-       '<div class="mlabel"><span class="mono">'+fmtNum(sumP)+' g 摂取</span>'+
-       '<span class="mono">目標 '+fmtNum(tP)+' g</span></div></div>';
-    if(pPace!=null) h+='<div class="pace">残り'+remainDays+'日、1日あたり <b class="mono">'+
-       fmtNum(pPace)+' g</b> 必要</div>';
-  } else {
-    h+='<div class="muted">設定で1日の平均タンパク質を入れると、達成状況が表示されます。</div>';
+  /* macro grid */
+  var macros=NUTRIENTS.filter(function(n){ return !n.hero; });
+  var anyMacro=macros.some(function(n){ return targetFor(cfg,n.id,periodDays)>0; });
+  if(anyMacro){
+    h+='<div class="mgrid">';
+    macros.forEach(function(n){
+      var t=targetFor(cfg,n.id,periodDays); if(!t) return;
+      var st=statusFor(n,sums[n.id],t,timeFrac);
+      var dirTxt=n.dir==="ceiling"?"残り":"あと";
+      var pace = remainDays>0 ? (n.dir==="ceiling"?Math.max((t-sums[n.id])/remainDays,0):Math.max((t-sums[n.id])/remainDays,0)) : null;
+      h+='<div class="mcard"><div class="mcTop"><span class="mcLbl">'+n.label+'</span>'+
+         '<span class="mcDir">'+dirTxt+'</span></div>'+
+         '<div class="mcNum mono" style="color:'+st.color+'">'+fmtNum(st.heroNum)+'<span class="u">'+n.unit+'</span></div>'+
+         smallMeter(st.frac,st.color,timeFrac,showMarker)+
+         '<div class="mcSt" style="color:'+st.pillFg+'">'+st.pillText+'</div>'+
+         '<div class="mcSub mono">'+fmtNum(sums[n.id])+' / '+fmtNum(t)+' '+n.unit+
+         (pace!=null?'・1日'+fmtNum(pace)+st.paceVerb:'')+'</div></div>';
+    });
+    h+='</div>';
   }
-  h+='</div>';
 
   /* stats */
   h+='<div class="stats">'+
-     '<div class="stat"><div class="statNum mono">'+elapsed+
-     '<span style="font-size:13px;color:var(--soft)">/'+periodDays+'</span></div>'+
-     '<div class="statLbl">経過日数</div></div>'+
-     '<div class="stat"><div class="statNum mono">'+(enteredDays?fmtNum(sumK/enteredDays):"—")+
-     '</div><div class="statLbl">1日平均<br>kcal</div></div>'+
-     '<div class="stat"><div class="statNum mono">'+(enteredDays?fmtNum(sumP/enteredDays):"—")+
-     '</div><div class="statLbl">1日平均<br>タンパク質 g</div></div></div>';
+     '<div class="stat"><div class="statNum mono">'+elapsed+'<span style="font-size:13px;color:var(--soft)">/'+periodDays+'</span></div><div class="statLbl">経過日数</div></div>'+
+     '<div class="stat"><div class="statNum mono">'+entered+'</div><div class="statLbl">記録した日数</div></div>'+
+     '<div class="stat"><div class="statNum mono">'+(entered?fmtNum(sums.kcal/entered):"—")+'</div><div class="statLbl">1日平均<br>kcal</div></div></div>';
 
   /* input */
-  var sel=normEntry(state.entries[selDate]);
-  h+='<div class="h">入力する</div>'+
-     '<div class="daysel">対象の日：<b>'+fmtJP(parseISO(selDate))+'</b>'+
-     (selDate===todayISO?" ・今日":"")+'</div>'+
-     '<div class="fields">'+
-       '<div class="fwrap"><div class="flab">カロリー（kcal）</div>'+
-       '<input class="field mono" type="number" inputmode="numeric" id="inK" placeholder="0" value="'+
-       (sel&&sel.k!=null?sel.k:"")+'"></div>'+
-       '<div class="fwrap"><div class="flab">タンパク質（g）</div>'+
-       '<input class="field mono" type="number" inputmode="numeric" id="inP" placeholder="0" value="'+
-       (sel&&sel.p!=null?sel.p:"")+'"></div>'+
-     '</div>'+
-     '<button class="saveBtn" data-act="saveEntry">保存</button>'+
+  var sel=state.entries[selDate];
+  h+='<div class="h">入力する</div><div class="daysel">対象の日：<b>'+fmtJP(parseISO(selDate))+'</b>'+(selDate===todayISO?" ・今日":"")+'</div>';
+  h+='<div class="ig">';
+  NUTRIENTS.forEach(function(n){
+    var v=getVal(sel,n.id); v=(v==null?"":v);
+    var cls=n.hero?"full":"";
+    h+='<div class="'+cls+'"><div class="flab">'+n.label+'（'+n.unit+'）</div>'+
+       '<input class="field mono" type="number" inputmode="numeric" id="in_'+n.id+'" data-nid="'+n.id+'" placeholder="0" value="'+v+'"></div>';
+  });
+  h+='</div><button class="saveBtn" data-act="saveEntry">保存</button>'+
      '<div class="saveState '+saveCls+'">'+esc(saveMsg)+'</div>';
 
   /* day list */
   h+='<div class="h">この期間の記録</div>';
   days.forEach(function(d){
     var cls="day"+(d.iso===selDate?" sel":"")+(d.iso===todayISO?" today":"");
-    h+='<div class="'+cls+'" data-iso="'+d.iso+'">'+
-       '<div class="dDate">'+fmtJP(d.date)+
-       (d.iso===todayISO?'<span class="dTag">今日</span>':'')+'</div>';
-    if(d.e){
-      h+='<div class="dVals"><span class="dK mono">'+
-         (d.e.k!=null?fmtNum(d.e.k)+" kcal":"— kcal")+'</span>'+
-         '<span class="dP mono">'+(d.e.p!=null?fmtNum(d.e.p)+" g":"— g")+'</span></div>';
-    } else {
-      h+='<span class="dEmpty">未入力</span>';
+    var kv=getVal(d.e,"kcal");
+    h+='<div class="'+cls+'" data-iso="'+d.iso+'"><div class="dayHead"><span class="dDate">'+fmtJP(d.date)+
+       (d.iso===todayISO?'<span class="dTag">今日</span>':'')+'</span>';
+    if(d.e && entryHasAny(d.e)) h+='<span class="dKcal mono">'+(kv!=null?fmtNum(kv)+" kcal":"— kcal")+'</span>';
+    else h+='<span class="dEmpty">未入力</span>';
+    h+='</div>';
+    if(d.e && entryHasAny(d.e)){
+      var parts=[];
+      [["p","P"],["f","F"],["c","C"],["fiber","繊"]].forEach(function(pair){
+        var v=getVal(d.e,pair[0]); if(v!=null) parts.push('<span><span class="lab">'+pair[1]+'</span> '+fmtNum(v)+'g</span>');
+      });
+      if(parts.length) h+='<div class="dMacros mono">'+parts.join("")+'</div>';
     }
     h+='</div>';
   });
@@ -453,122 +421,77 @@ function renderMain(){
        '<button class="toggle" data-act="toggleHist">'+(showHistory?"隠す":"見る")+'</button></div>';
     if(showHistory){
       state.history.forEach(function(x){
-        var kO=x.targetKcal&&x.kcal>x.targetKcal;
-        var kF=x.targetKcal?Math.min(x.kcal/x.targetKcal,1):0;
-        var pD=x.targetProtein&&x.protein>=x.targetProtein;
-        var pF=x.targetProtein?Math.min(x.protein/x.targetProtein,1):0;
-        h+='<div class="hist"><div class="histTop">'+
-           '<span class="mono">'+fmtShort(parseISO(x.startDate))+'–'+fmtShort(parseISO(x.endDate))+'</span>'+
-           '<span class="mono">'+x.entered+'/'+x.days+'日入力</span></div>';
-        if(x.targetKcal>0){
-          h+='<div class="histRow"><div class="histLbl mono">'+
-             '<span>カロリー <b>'+fmtNum(x.kcal)+'</b> / '+fmtNum(x.targetKcal)+'</span>'+
-             '<span style="color:'+(kO?"var(--over)":"var(--green)")+'">'+
-             (kO?fmtNum(x.kcal-x.targetKcal)+" 超過":fmtNum(x.targetKcal-x.kcal)+" 残")+'</span></div>'+
-             '<div class="histBar"><div class="histFill" style="width:'+(kF*100)+
-             '%;background:'+(kO?"var(--over)":"var(--green)")+'"></div></div></div>';
-        }
-        if(x.targetProtein>0){
-          h+='<div class="histRow"><div class="histLbl mono">'+
-             '<span>タンパク質 <b>'+fmtNum(x.protein)+'</b> / '+fmtNum(x.targetProtein)+' g</span>'+
-             '<span style="color:'+(pD?"var(--green)":"var(--amber)")+'">'+
-             (pD?"達成":fmtNum(x.targetProtein-x.protein)+" 不足")+'</span></div>'+
-             '<div class="histBar"><div class="histFill" style="width:'+(pF*100)+
-             '%;background:'+(pD?"var(--green)":"var(--amber)")+'"></div></div></div>';
-        }
+        h+='<div class="hist"><div class="histTop"><span class="mono">'+fmtShort(parseISO(x.startDate))+'–'+fmtShort(parseISO(x.endDate))+'</span><span class="mono">'+x.entered+'/'+x.days+'日入力</span></div>';
+        NUTRIENTS.forEach(function(n){
+          var t=x.targets[n.id]; if(!t) return;
+          var sum=x.sums[n.id]||0, frac=Math.min(sum/t,1);
+          var col, rightTxt;
+          if(n.dir==="ceiling"){ var over=sum>t; col=over?"var(--over)":"var(--green)"; rightTxt=over?fmtNum(sum-t)+" 超過":fmtNum(t-sum)+" 残"; }
+          else { var done=sum>=t; col=done?"var(--green)":"var(--amber)"; rightTxt=done?"達成":fmtNum(t-sum)+" 不足"; }
+          h+='<div class="histRow"><div class="histLbl mono"><span>'+n.label+' <b>'+fmtNum(sum)+'</b> / '+fmtNum(t)+' '+n.unit+'</span><span style="color:'+col+'">'+rightTxt+'</span></div>'+
+             '<div class="histBar"><div class="histFill" style="width:'+(frac*100)+'%;background:'+col+'"></div></div></div>';
+        });
         h+='</div>';
       });
     }
   }
 
-  h+='<div class="hint">日付をタップするとその日を編集できます。<br>'+
-     fmtJP(addDays(end,1))+'から、次の'+periodDays+'日間が自動で始まります。</div>';
+  h+='<div class="hint">日付をタップするとその日を編集できます。<br>'+fmtJP(addDays(end,1))+'から、次の'+periodDays+'日間が自動で始まります。</div>';
 
-  document.getElementById("app").className="wrap";
-  document.getElementById("app").innerHTML=h;
+  var app=document.getElementById("app"); app.className="wrap"; app.innerHTML=h;
 }
 
-function render(){
-  if(!state.config||settingsOpen) renderSetup();
-  else renderMain();
-}
+function render(){ if(!state.config||settingsOpen) renderSetup(); else renderMain(); }
 
 /* ---------- actions ---------- */
-function flash(msg,cls){
-  saveMsg=msg; saveCls=cls;
-  render();
-  if(cls==="ok") setTimeout(function(){ saveMsg=""; saveCls=""; render(); },2000);
-}
-
+function flash(msg,cls){ saveMsg=msg; saveCls=cls; render(); if(cls==="ok") setTimeout(function(){ saveMsg=""; saveCls=""; render(); },2000); }
 function saveEntry(){
-  var k=document.getElementById("inK").value.trim();
-  var p=document.getElementById("inP").value.trim();
-  if(k==="" && p==="") delete state.entries[selDate];
-  else state.entries[selDate]={ k:k===""?null:Number(k), p:p===""?null:Number(p) };
-  var ok=writeState();
-  storageOk=ok;
-  flash(ok?"保存しました":"保存できませんでした。閉じると消えます。", ok?"ok":"bad");
+  var obj={}, any=false;
+  NUTRIENTS.forEach(function(n){
+    var el=document.getElementById("in_"+n.id); var raw=el?el.value.trim():"";
+    if(raw!==""){ obj[n.id]=Number(raw); any=true; }
+  });
+  if(!any) delete state.entries[selDate]; else state.entries[selDate]=obj;
+  storageOk=writeState();
+  flash(storageOk?"保存しました":"保存できませんでした。閉じると消えます。", storageOk?"ok":"bad");
 }
-
 function saveSettings(){
   var s=document.getElementById("fStart").value, e=document.getElementById("fEnd").value;
   if(!s||!e||parseISO(e)<parseISO(s)){ updateCalc(); return; }
-  state.config={
-    startDate:s, endDate:e,
-    avgKcal:Number(document.getElementById("fAvgK").value)||0,
-    avgProtein:Number(document.getElementById("fAvgP").value)||0
-  };
+  var avg={};
+  NUTRIENTS.forEach(function(n){ avg[n.id]=Number(document.getElementById("avg_"+n.id).value)||0; });
+  state.config={ startDate:s, endDate:e, avg:avg };
   storageOk=writeState();
-  settingsOpen=false;
-  selDate=toISO(new Date());
-  saveMsg=""; saveCls="";
-  render();
+  settingsOpen=false; selDate=toISO(new Date()); saveMsg=""; saveCls=""; render();
 }
-
 function exportData(){
   var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
-  var a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
+  var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
   a.download="calorie-ledger-"+toISO(new Date())+".json";
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
 }
-
 document.getElementById("importFile").addEventListener("change",function(ev){
-  var f=ev.target.files&&ev.target.files[0];
-  if(!f) return;
+  var f=ev.target.files&&ev.target.files[0]; if(!f) return;
   var r=new FileReader();
   r.onload=function(){
     try{
-      var d=JSON.parse(r.result);
-      if(!d||!d.config) throw new Error("形式が違います");
+      var d=JSON.parse(r.result); if(!d||!d.config) throw new Error("bad");
       state={ config:d.config, entries:d.entries||{}, history:d.history||[] };
-      rolledCount=rollForward();
-      storageOk=writeState();
-      settingsOpen=false;
-      render();
-    }catch(err){
-      alert("読み込めませんでした。書き出したファイルを選んでください。");
-    }
+      rolledCount=rollForward(); storageOk=writeState(); settingsOpen=false; render();
+    }catch(err){ alert("読み込めませんでした。書き出したファイルを選んでください。"); }
   };
-  r.readAsText(f);
-  ev.target.value="";
+  r.readAsText(f); ev.target.value="";
 });
 
 /* ---------- events ---------- */
 document.getElementById("app").addEventListener("click",function(ev){
   var preset=ev.target.closest("[data-preset]");
-  if(preset){
-    var n=Number(preset.getAttribute("data-preset"));
-    var t=new Date();
+  if(preset){ var n=Number(preset.getAttribute("data-preset")), t=new Date();
     document.getElementById("fStart").value=toISO(t);
-    document.getElementById("fEnd").value=toISO(addDays(t,n-1));
-    updateCalc();
-    return;
-  }
+    document.getElementById("fEnd").value=toISO(addDays(t,n-1)); updateCalc(); return; }
   var btn=ev.target.closest("[data-act]");
-  if(btn){
-    var a=btn.getAttribute("data-act");
+  if(btn){ var a=btn.getAttribute("data-act");
     if(a==="saveEntry") saveEntry();
     else if(a==="saveSettings") saveSettings();
     else if(a==="openSettings"){ settingsOpen=true; render(); }
@@ -577,35 +500,35 @@ document.getElementById("app").addEventListener("click",function(ev){
     else if(a==="toggleHist"){ showHistory=!showHistory; render(); }
     else if(a==="export") exportData();
     else if(a==="import") document.getElementById("importFile").click();
-    return;
-  }
+    return; }
   var day=ev.target.closest("[data-iso]");
   if(day){ selDate=day.getAttribute("data-iso"); saveMsg=""; saveCls=""; render(); }
 });
-
 document.getElementById("app").addEventListener("input",function(ev){
-  if(["fStart","fEnd","fAvgK","fAvgP"].indexOf(ev.target.id)>=0) updateCalc();
+  if(ev.target.id&&ev.target.id.indexOf("avg_")===0) updateCalc();
+  if(ev.target.id==="fStart"||ev.target.id==="fEnd") updateCalc();
 });
-
 document.getElementById("app").addEventListener("keydown",function(ev){
-  if(ev.key==="Enter"&&(ev.target.id==="inK"||ev.target.id==="inP")){
-    ev.preventDefault(); saveEntry();
-  }
+  if(ev.key==="Enter"&&ev.target.id&&ev.target.id.indexOf("in_")===0){ ev.preventDefault(); saveEntry(); }
 });
-
-/* re-check the period when coming back to the app */
 document.addEventListener("visibilitychange",function(){
-  if(!document.hidden && state.config){
-    var r=rollForward();
-    if(r>0){ rolledCount=r; writeState(); render(); }
-  }
+  if(!document.hidden && state.config){ var r=rollForward(); if(r>0){ rolledCount=r; writeState(); render(); } }
 });
 
 /* ---------- boot ---------- */
 storageOk=probeStorage();
-var loadedState=readState();
-if(loadedState&&loadedState.config){
-  state={ config:loadedState.config, entries:loadedState.entries||{}, history:loadedState.history||[] };
+var loaded=readState(KEY);
+if(!loaded){
+  var old=readState(OLD_KEY);
+  if(old&&old.config){
+    var days=diffDays(parseISO(old.config.startDate),parseISO(old.config.endDate))+1;
+    var avg={ kcal:old.config.avgKcal?Number(old.config.avgKcal):0, p:old.config.avgProtein?Number(old.config.avgProtein):0, f:0, c:0, fiber:0 };
+    loaded={ config:{ startDate:old.config.startDate, endDate:old.config.endDate, avg:avg }, entries:old.entries||{}, history:[] };
+  }
+}
+if(loaded&&loaded.config){
+  state={ config:loaded.config, entries:loaded.entries||{}, history:loaded.history||[] };
+  if(!state.config.avg) state.config.avg={};
   rolledCount=rollForward();
   if(rolledCount>0) writeState();
 }
