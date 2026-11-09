@@ -100,6 +100,22 @@ button{ font-family:inherit; }
 .saveState{ font-size:11.5px; margin-top:8px; text-align:center; min-height:16px; color:var(--soft); }
 .saveState.ok{ color:var(--green); }
 .saveState.bad{ color:var(--over); font-weight:600; }
+.ocrBtn{ width:100%; border:1px solid var(--green); background:var(--green-bg); color:var(--green);
+  border-radius:11px; padding:13px; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:10px;
+  display:flex; align-items:center; justify-content:center; gap:7px; }
+.ocrBtn svg{ width:17px; height:17px; }
+.ocrNote{ background:var(--amber-bg); color:var(--amber); border-radius:10px; padding:9px 12px;
+  font-size:11.5px; line-height:1.55; margin-bottom:10px; }
+.ov{ position:fixed; inset:0; background:rgba(24,33,29,.55); backdrop-filter:blur(2px);
+  display:flex; align-items:center; justify-content:center; z-index:50; padding:24px; }
+.ovCard{ background:var(--card); border-radius:16px; padding:24px 22px; max-width:300px; width:100%; text-align:center; }
+.ovTitle{ font-size:15px; font-weight:600; margin-bottom:14px; }
+.ovBar{ height:8px; border-radius:5px; background:var(--paper); border:1px solid var(--line); overflow:hidden; }
+.ovFill{ height:100%; width:0%; background:var(--green); border-radius:5px; transition:width .25s ease; }
+.ovPct{ font-size:12px; color:var(--soft); margin-top:9px; }
+.ovErr{ font-size:12.5px; color:var(--over); line-height:1.6; margin-top:4px; }
+.ovClose{ margin-top:16px; border:1px solid var(--line); background:var(--card); color:var(--soft);
+  border-radius:10px; padding:10px 18px; font-size:14px; cursor:pointer; }
 
 .day{ display:block; padding:11px 14px; border:1px solid var(--line); border-radius:11px;
   background:var(--card); margin-bottom:7px; cursor:pointer; }
@@ -146,6 +162,7 @@ button{ font-family:inherit; }
 <body>
 <div class="wrap" id="app"></div>
 <input type="file" id="importFile" accept="application/json" style="display:none">
+<input type="file" id="ocrFile" accept="image/*" style="display:none">
 
 <script>
 "use strict";
@@ -223,6 +240,7 @@ function rollForward(){
 var state={config:null,entries:{},history:[]};
 var rolledCount=0, showHistory=false, settingsOpen=false;
 var selDate=toISO(new Date()), saveMsg="", saveCls="";
+var pendingInput=null, ocrNote="";
 
 /* ---------- status for one nutrient ---------- */
 function statusFor(n,sum,target,timeFrac){
@@ -385,9 +403,12 @@ function renderMain(){
   /* input */
   var sel=state.entries[selDate];
   h+='<div class="h">入力する</div><div class="daysel">対象の日：<b>'+fmtJP(parseISO(selDate))+'</b>'+(selDate===todayISO?" ・今日":"")+'</div>';
+  h+='<button class="ocrBtn" data-act="ocr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>写真から読み取る</button>';
+  if(ocrNote) h+='<div class="ocrNote">写真から読み取りました。数字を確認して保存してください。'+(ocrNote==="partial"?'一部は読み取れなかったので、空欄は手で入れてください。':'')+'カロリーは読み間違いが起きやすいので、特にご確認を。</div>';
   h+='<div class="ig">';
   NUTRIENTS.forEach(function(n){
-    var v=getVal(sel,n.id); v=(v==null?"":v);
+    var v=(pendingInput&&pendingInput[n.id]!=null)?pendingInput[n.id]:getVal(sel,n.id);
+    v=(v==null?"":v);
     var cls=n.hero?"full":"";
     h+='<div class="'+cls+'"><div class="flab">'+n.label+'（'+n.unit+'）</div>'+
        '<input class="field mono" type="number" inputmode="numeric" id="in_'+n.id+'" data-nid="'+n.id+'" placeholder="0" value="'+v+'"></div>';
@@ -453,6 +474,7 @@ function saveEntry(){
   });
   if(!any) delete state.entries[selDate]; else state.entries[selDate]=obj;
   storageOk=writeState();
+  pendingInput=null; ocrNote="";
   flash(storageOk?"保存しました":"保存できませんでした。閉じると消えます。", storageOk?"ok":"bad");
 }
 function saveSettings(){
@@ -484,6 +506,132 @@ document.getElementById("importFile").addEventListener("change",function(ev){
   r.readAsText(f); ev.target.value="";
 });
 
+/* ---------- OCR: read numbers off a screenshot ---------- */
+var tessLoading=null;
+function loadTesseract(){
+  if(window.Tesseract) return Promise.resolve();
+  if(tessLoading) return tessLoading;
+  tessLoading=new Promise(function(resolve,reject){
+    var s=document.createElement("script");
+    s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+    s.onload=function(){ resolve(); };
+    s.onerror=function(){ reject(new Error("load")); };
+    document.head.appendChild(s);
+  });
+  return tessLoading;
+}
+function preprocess(img){
+  var scale=1080/img.width; if(scale>2) scale=2; if(scale<0.2) scale=0.2;
+  var cw=Math.max(1,Math.round(img.width*scale)), ch=Math.max(1,Math.round(img.height*scale));
+  var c=document.createElement("canvas"); c.width=cw; c.height=ch;
+  var ctx=c.getContext("2d"); ctx.drawImage(img,0,0,cw,ch);
+  var d=ctx.getImageData(0,0,cw,ch), p=d.data, sum=0;
+  for(var i=0;i<p.length;i+=4){ var g=0.299*p[i]+0.587*p[i+1]+0.114*p[i+2]; p[i]=p[i+1]=p[i+2]=g; sum+=g; }
+  if(sum/(p.length/4)<128){ for(var j=0;j<p.length;j+=4){ p[j]=255-p[j]; p[j+1]=255-p[j+1]; p[j+2]=255-p[j+2]; } }
+  ctx.putImageData(d,0,0); return c;
+}
+var OCR_LABELS=[["kcal",["カロリー","カロ"]],["p",["たん","タンパク","蛋白"]],["f",["脂質"]],["c",["炭水化物","炭水"]],["fiber",["食物繊維","繊維"]]];
+var OCR_SKIP=["糖質","塩分"];
+/* Calomil's stylized digits are often OCR'd as circled/fullwidth numerals; map them to ASCII. */
+function normDigits(s){
+  var out="";
+  for(var i=0;i<s.length;i++){ var code=s.charCodeAt(i);
+    if(code===0x24EA){ out+="0"; continue; }                               /* circled 0 */
+    if(code>=0x2460 && code<=0x2473){ out+=String(code-0x2460+1); continue; } /* circled 1..20 */
+    if(code>=0xFF10 && code<=0xFF19){ out+=String(code-0xFF10); continue; }   /* fullwidth 0-9 */
+    if(code===0xFF0E){ out+="."; continue; }                                 /* fullwidth . */
+    if(code===0xFF0F){ out+="/"; continue; }                                 /* fullwidth / */
+    out+=s[i];
+  }
+  return out;
+}
+function ocrToNum(s){ var m=normDigits(String(s)).replace(/\s/g,"").match(/\d[\d,]*\.?\d*/); return m?m[0].replace(/,/g,""):null; }
+function ocrLabel(seg){
+  for(var i=0;i<OCR_SKIP.length;i++) if(seg.indexOf(OCR_SKIP[i])>=0) return "SKIP";
+  for(var i=0;i<OCR_LABELS.length;i++){ var subs=OCR_LABELS[i][1];
+    for(var j=0;j<subs.length;j++) if(seg.indexOf(subs[j])>=0) return OCR_LABELS[i][0]; }
+  return null;
+}
+function collectWords(data){
+  if(!data) return [];
+  if(data.words && data.words.length) return data.words;
+  var out=[], blocks=data.blocks||[];
+  blocks.forEach(function(b){ (b.paragraphs||[]).forEach(function(p){ (p.lines||[]).forEach(function(l){ (l.words||[]).forEach(function(w){ out.push(w); }); }); }); });
+  return out;
+}
+function parseOCR(words){
+  var ws=[];
+  words.forEach(function(w){
+    var txt=(w.text||"").trim(); if(!txt) return;
+    if(w.confidence!=null && w.confidence<25) return;
+    var b=w.bbox||{x0:0,y0:0,x1:0,y1:0};
+    ws.push({ l:b.x0, w:b.x1-b.x0, cx:(b.x0+b.x1)/2, cy:(b.y0+b.y1)/2, h:(b.y1-b.y0), text:txt });
+  });
+  if(!ws.length) return {};
+  var imgW=0, hs=[]; ws.forEach(function(w){ imgW=Math.max(imgW,w.l+w.w); hs.push(w.h); });
+  hs.sort(function(a,b){ return a-b; }); var medH=hs[Math.floor(hs.length/2)]||20; var mid=imgW/2;
+  ws.sort(function(a,b){ return a.cy-b.cy; });
+  var rows=[], cur=[];
+  ws.forEach(function(w){ if(cur.length && (w.cy-cur[cur.length-1].cy)>medH*0.8){ rows.push(cur); cur=[]; } cur.push(w); });
+  if(cur.length) rows.push(cur);
+  var seg=rows.map(function(r){ r.sort(function(a,b){ return a.l-b.l; });
+    var L="",R=""; r.forEach(function(w){ if(w.cx<mid) L+=w.text; else R+=w.text; }); return [L,R]; });
+  var res={};
+  [0,1].forEach(function(col){
+    var pending=null;
+    seg.forEach(function(pair){ var s=pair[col]; if(!s) return;
+      var lf=ocrLabel(s), n=ocrToNum(s);
+      if(lf==="SKIP") pending="SKIP"; else if(lf) pending=lf;
+      if(n && pending && pending!=="SKIP" && res[pending]==null){ res[pending]=n; pending=null; }
+      else if(n && pending==="SKIP") pending=null;
+    });
+  });
+  return res;
+}
+function ocrOverlay(){
+  var o=document.createElement("div"); o.className="ov"; o.id="ocrOv";
+  o.innerHTML='<div class="ovCard"><div class="ovTitle">写真を読み取り中…</div><div class="ovBar"><div class="ovFill" id="ovFill"></div></div><div class="ovPct" id="ovPct">準備中…</div></div>';
+  document.body.appendChild(o);
+}
+function ocrProgress(pct,label){ var f=document.getElementById("ovFill"), t=document.getElementById("ovPct"); if(f) f.style.width=pct+"%"; if(t) t.textContent=label; }
+function ocrErr(msg){ var o=document.getElementById("ocrOv"); if(!o){ ocrOverlay(); o=document.getElementById("ocrOv"); }
+  o.innerHTML='<div class="ovCard"><div class="ovTitle">読み取れませんでした</div><div class="ovErr">'+msg+'</div><button class="ovClose" id="ovCloseBtn">閉じる</button></div>';
+  document.getElementById("ovCloseBtn").onclick=ocrClose;
+}
+function ocrClose(){ var o=document.getElementById("ocrOv"); if(o&&o.parentNode) o.parentNode.removeChild(o); }
+function runOCR(file){
+  ocrOverlay();
+  var url=URL.createObjectURL(file), img=new Image();
+  img.onload=function(){
+    URL.revokeObjectURL(url);
+    var canvas; try{ canvas=preprocess(img); }catch(e){ ocrErr("画像を処理できませんでした。"); return; }
+    ocrProgress(5,"文字認識エンジンを準備中…");
+    var worker=null;
+    loadTesseract().then(function(){
+      return window.Tesseract.createWorker("jpn+eng",1,{ logger:function(m){
+        if(m.status==="recognizing text") ocrProgress(12+Math.round((m.progress||0)*83),"読み取り中… "+Math.round((m.progress||0)*100)+"%");
+        else ocrProgress(Math.min(11,Math.round((m.progress||0)*11)),"準備中…（初回は少し時間がかかります）");
+      }});
+    }).then(function(w){
+      worker=w; ocrProgress(12,"読み取り中…");
+      return worker.recognize(canvas,{},{ blocks:true });
+    }).then(function(out){
+      if(worker){ worker.terminate(); worker=null; }
+      var words=collectWords(out&&out.data);
+      var res=parseOCR(words), got=0; for(var k in res) got++;
+      if(got===0){ ocrErr("数字を読み取れませんでした。栄養サマリーの数字がはっきり写るように、画面全体を撮り直してみてください。"); return; }
+      ocrClose();
+      pendingInput=res; ocrNote = got>=4 ? "ok" : "partial"; saveMsg=""; saveCls=""; render();
+      var el=document.getElementById("in_kcal"); if(el) el.scrollIntoView({behavior:"smooth",block:"center"});
+    }).catch(function(e){ if(worker){ try{ worker.terminate(); }catch(_){} } ocrErr("読み取りに失敗しました。通信環境を確認して、もう一度お試しください。"); });
+  };
+  img.onerror=function(){ URL.revokeObjectURL(url); ocrErr("画像を開けませんでした。"); };
+  img.src=url;
+}
+document.getElementById("ocrFile").addEventListener("change",function(ev){
+  var f=ev.target.files&&ev.target.files[0]; ev.target.value=""; if(f) runOCR(f);
+});
+
 /* ---------- events ---------- */
 document.getElementById("app").addEventListener("click",function(ev){
   var preset=ev.target.closest("[data-preset]");
@@ -500,9 +648,10 @@ document.getElementById("app").addEventListener("click",function(ev){
     else if(a==="toggleHist"){ showHistory=!showHistory; render(); }
     else if(a==="export") exportData();
     else if(a==="import") document.getElementById("importFile").click();
+    else if(a==="ocr") document.getElementById("ocrFile").click();
     return; }
   var day=ev.target.closest("[data-iso]");
-  if(day){ selDate=day.getAttribute("data-iso"); saveMsg=""; saveCls=""; render(); }
+  if(day){ selDate=day.getAttribute("data-iso"); saveMsg=""; saveCls=""; pendingInput=null; ocrNote=""; render(); }
 });
 document.getElementById("app").addEventListener("input",function(ev){
   if(ev.target.id&&ev.target.id.indexOf("avg_")===0) updateCalc();
