@@ -478,7 +478,7 @@ function saveEntry(){
   var obj={}, any=false;
   NUTRIENTS.forEach(function(n){
     var el=document.getElementById("in_"+n.id); var raw=el?el.value.trim():"";
-    if(raw!==""){ obj[n.id]=Number(raw); any=true; }
+    if(raw!==""){ var num=Number(raw); if(!isNaN(num)) num=Math.round(num); obj[n.id]=num; any=true; }
   });
   if(!any) delete state.entries[selDate]; else state.entries[selDate]=obj;
   storageOk=writeState();
@@ -489,7 +489,7 @@ function saveSettings(){
   var s=document.getElementById("fStart").value, e=document.getElementById("fEnd").value;
   if(!s||!e||parseISO(e)<parseISO(s)){ updateCalc(); return; }
   var avg={};
-  NUTRIENTS.forEach(function(n){ avg[n.id]=Number(document.getElementById("avg_"+n.id).value)||0; });
+  NUTRIENTS.forEach(function(n){ avg[n.id]=Math.round(Number(document.getElementById("avg_"+n.id).value)||0); });
   state.config={ startDate:s, endDate:e, avg:avg };
   storageOk=writeState();
   settingsOpen=false; selDate=toISO(new Date()); saveMsg=""; saveCls=""; render();
@@ -702,6 +702,7 @@ function runOCR(file,mode){
         ? "表を読み取れませんでした。「合計」の列が入るように、表全体がはっきり写る範囲で撮り直してみてください。"
         : "数字を読み取れませんでした。栄養サマリーの数字がはっきり写るように、画面全体を撮り直してみてください。"); return; }
       ocrClose();
+      for(var rk in res){ var rn=Number(res[rk]); if(!isNaN(rn)) res[rk]=String(Math.round(rn)); }
       pendingInput=res; ocrNote = mode==="table" ? (got>=4?"table":"table_partial") : (got>=4?"ok":"partial");
       saveMsg=""; saveCls=""; render();
       var el=document.getElementById("in_kcal"); if(el) el.scrollIntoView({behavior:"smooth",block:"center"});
