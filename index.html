@@ -104,6 +104,7 @@ button{ font-family:inherit; }
   border-radius:11px; padding:13px; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:10px;
   display:flex; align-items:center; justify-content:center; gap:7px; }
 .ocrBtn svg{ width:17px; height:17px; }
+.ocrBtn.alt{ border-color:var(--pro); background:var(--pro-bg); color:var(--pro); }
 .ocrNote{ background:var(--amber-bg); color:var(--amber); border-radius:10px; padding:9px 12px;
   font-size:11.5px; line-height:1.55; margin-bottom:10px; }
 .ov{ position:fixed; inset:0; background:rgba(24,33,29,.55); backdrop-filter:blur(2px);
@@ -163,6 +164,7 @@ button{ font-family:inherit; }
 <div class="wrap" id="app"></div>
 <input type="file" id="importFile" accept="application/json" style="display:none">
 <input type="file" id="ocrFile" accept="image/*" style="display:none">
+<input type="file" id="tblFile" accept="image/*" style="display:none">
 
 <script>
 "use strict";
@@ -403,8 +405,14 @@ function renderMain(){
   /* input */
   var sel=state.entries[selDate];
   h+='<div class="h">入力する</div><div class="daysel">対象の日：<b>'+fmtJP(parseISO(selDate))+'</b>'+(selDate===todayISO?" ・今日":"")+'</div>';
-  h+='<button class="ocrBtn" data-act="ocr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>写真から読み取る</button>';
-  if(ocrNote) h+='<div class="ocrNote">写真から読み取りました。数字を確認して保存してください。'+(ocrNote==="partial"?'一部は読み取れなかったので、空欄は手で入れてください。':'')+'カロリーは読み間違いが起きやすいので、特にご確認を。</div>';
+  h+='<button class="ocrBtn" data-act="ocr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>栄養サマリーの写真から読み取る</button>';
+  h+='<button class="ocrBtn alt" data-act="ocrTable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14h18M14 4v16"/></svg>合計の表から読み取る</button>';
+  if(ocrNote){
+    if(ocrNote==="table"||ocrNote==="table_partial")
+      h+='<div class="ocrNote">表の「合計」列を読み取りました。各数字を必ず確認してください。'+(ocrNote==="table_partial"?'読み取れなかった項目は空欄のままなので、手で入れてください。':'')+'特に小数点の桁（例：20.9 と 209 の取り違え）にご注意を。</div>';
+    else
+      h+='<div class="ocrNote">写真から読み取りました。数字を確認して保存してください。'+(ocrNote==="partial"?'一部は読み取れなかったので、空欄は手で入れてください。':'')+'カロリーは読み間違いが起きやすいので、特にご確認を。</div>';
+  }
   h+='<div class="ig">';
   NUTRIENTS.forEach(function(n){
     var v=(pendingInput&&pendingInput[n.id]!=null)?pendingInput[n.id]:getVal(sel,n.id);
@@ -520,8 +528,9 @@ function loadTesseract(){
   });
   return tessLoading;
 }
-function preprocess(img){
-  var scale=1080/img.width; if(scale>2) scale=2; if(scale<0.2) scale=0.2;
+function preprocess(img,targetW){
+  targetW=targetW||1080;
+  var scale=targetW/img.width; if(scale>2.2) scale=2.2; if(scale<0.2) scale=0.2;
   var cw=Math.max(1,Math.round(img.width*scale)), ch=Math.max(1,Math.round(img.height*scale));
   var c=document.createElement("canvas"); c.width=cw; c.height=ch;
   var ctx=c.getContext("2d"); ctx.drawImage(img,0,0,cw,ch);
@@ -588,6 +597,73 @@ function parseOCR(words){
   });
   return res;
 }
+/* ---- table parser: AIの計算結果など「合計」列のある表から読む ---- */
+function tblClean(raw){
+  var t=normDigits(String(raw)).replace(/kcal/ig,"").replace(/g/ig,"");
+  var m=t.replace(/\s/g,"").match(/\d[\d,]*\.?\d*/);
+  return m?m[0].replace(/,/g,""):null;
+}
+function tblHasUnit(raw){ return /(kcal|g)\s*$/i.test(normDigits(String(raw))); }
+var TBL_LABELS=[
+  ["kcal",function(s){return s.indexOf("カロ")>=0;}],
+  ["p",   function(s){return (/[Pp]/.test(s)&&s.length<=2)||s.indexOf("たん")>=0||s.indexOf("蛋")>=0;}],
+  ["f",   function(s){return (/[Ff]/.test(s)&&s.length<=2)||s.indexOf("脂")>=0;}],
+  ["c",   function(s){return s.indexOf("炭水")>=0||(/[Cc]/.test(s)&&s.length<=2);}],
+  ["fiber",function(s){return s.indexOf("食物")>=0||s.indexOf("繊維")>=0;}]
+];
+function tblLabel(s){
+  if(s.indexOf("糖質")>=0||s.indexOf("塩分")>=0) return "SKIP";
+  for(var i=0;i<TBL_LABELS.length;i++) if(TBL_LABELS[i][1](s)) return TBL_LABELS[i][0];
+  return null;
+}
+function parseTable(words){
+  var ws=[];
+  words.forEach(function(w){ var txt=(w.text||"").trim(); if(!txt) return; if(w.confidence!=null&&w.confidence<20) return;
+    var b=w.bbox||{x0:0,y0:0,x1:0,y1:0}; ws.push({cx:(b.x0+b.x1)/2,cy:(b.y0+b.y1)/2,h:b.y1-b.y0,text:txt}); });
+  if(!ws.length) return {};
+  ws.sort(function(a,b){return a.cy-b.cy;});
+  var hs=ws.map(function(w){return w.h;}).sort(function(a,b){return a-b;}); var medH=hs[Math.floor(hs.length/2)]||20;
+  var rows=[],cr=[];
+  ws.forEach(function(w){ if(cr.length&&(w.cy-cr[cr.length-1].cy)>medH*0.8){rows.push(cr);cr=[];} cr.push(w); });
+  if(cr.length)rows.push(cr);
+  var tableRows=[];
+  rows.forEach(function(r){
+    r.sort(function(a,b){return a.cx-b.cx;});
+    var firstNumCx=Infinity;
+    for(var i=0;i<r.length;i++){ if(tblClean(r[i].text)!=null){ firstNumCx=r[i].cx; break; } }
+    var labelText=r.filter(function(w){ return tblClean(w.text)==null && w.cx<firstNumCx; }).map(function(w){return w.text;}).join("");
+    var lf=tblLabel(labelText);
+    if(!lf) return;
+    var nums=r.filter(function(w){ return tblClean(w.text)!=null; }).map(function(w){ return {cx:w.cx,text:w.text,unit:tblHasUnit(w.text)}; });
+    tableRows.push({field:lf,nums:nums});
+  });
+  var allNums=[]; tableRows.forEach(function(tr){ tr.nums.forEach(function(n){ allNums.push(n); }); });
+  if(!allNums.length) return {};
+  var xs=allNums.map(function(n){return n.cx;}).sort(function(a,b){return a-b;});
+  var cols=[],c=[xs[0]];
+  for(var i=1;i<xs.length;i++){ if(xs[i]-c[c.length-1]>80){ cols.push(c); c=[]; } c.push(xs[i]); }
+  cols.push(c);
+  var centers=cols.map(function(cc){ return cc.reduce(function(a,b){return a+b;},0)/cc.length; });
+  var header=null; for(var i=0;i<ws.length;i++){ if(ws[i].text.indexOf("合計")>=0){ header=ws[i]; break; } }
+  var target;
+  if(header){ target=centers.reduce(function(best,x){ return Math.abs(x-header.cx)<Math.abs(best-header.cx)?x:best; },centers[0]); }
+  else {
+    var bi=-1,bs=-1;
+    centers.forEach(function(center,idx){
+      var inc=allNums.filter(function(n){return Math.abs(n.cx-center)<80;});
+      var sc=inc.filter(function(n){return n.unit;}).length/(inc.length||1);
+      if(sc>bs){bs=sc;bi=idx;}
+    });
+    target = bs>0 ? centers[bi] : (centers.length>=3?centers[2]:centers[centers.length-1]);
+  }
+  var res={};
+  tableRows.forEach(function(tr){
+    if(tr.field==="SKIP"||res[tr.field]!=null) return;
+    var cand=tr.nums.filter(function(n){ return Math.abs(n.cx-target)<90; }).sort(function(a,b){ return Math.abs(a.cx-target)-Math.abs(b.cx-target); });
+    if(cand.length){ var v=tblClean(cand[0].text); if(v!=null) res[tr.field]=v; }
+  });
+  return res;
+}
 function ocrOverlay(){
   var o=document.createElement("div"); o.className="ov"; o.id="ocrOv";
   o.innerHTML='<div class="ovCard"><div class="ovTitle">写真を読み取り中…</div><div class="ovBar"><div class="ovFill" id="ovFill"></div></div><div class="ovPct" id="ovPct">準備中…</div></div>';
@@ -599,12 +675,15 @@ function ocrErr(msg){ var o=document.getElementById("ocrOv"); if(!o){ ocrOverlay
   document.getElementById("ovCloseBtn").onclick=ocrClose;
 }
 function ocrClose(){ var o=document.getElementById("ocrOv"); if(o&&o.parentNode) o.parentNode.removeChild(o); }
-function runOCR(file){
+function runOCR(file,mode){
+  mode=mode||"summary";
+  var targetW = mode==="table" ? 1200 : 1080;
+  var parser  = mode==="table" ? parseTable : parseOCR;
   ocrOverlay();
   var url=URL.createObjectURL(file), img=new Image();
   img.onload=function(){
     URL.revokeObjectURL(url);
-    var canvas; try{ canvas=preprocess(img); }catch(e){ ocrErr("画像を処理できませんでした。"); return; }
+    var canvas; try{ canvas=preprocess(img,targetW); }catch(e){ ocrErr("画像を処理できませんでした。"); return; }
     ocrProgress(5,"文字認識エンジンを準備中…");
     var worker=null;
     loadTesseract().then(function(){
@@ -618,10 +697,13 @@ function runOCR(file){
     }).then(function(out){
       if(worker){ worker.terminate(); worker=null; }
       var words=collectWords(out&&out.data);
-      var res=parseOCR(words), got=0; for(var k in res) got++;
-      if(got===0){ ocrErr("数字を読み取れませんでした。栄養サマリーの数字がはっきり写るように、画面全体を撮り直してみてください。"); return; }
+      var res=parser(words), got=0; for(var k in res) got++;
+      if(got===0){ ocrErr(mode==="table"
+        ? "表を読み取れませんでした。「合計」の列が入るように、表全体がはっきり写る範囲で撮り直してみてください。"
+        : "数字を読み取れませんでした。栄養サマリーの数字がはっきり写るように、画面全体を撮り直してみてください。"); return; }
       ocrClose();
-      pendingInput=res; ocrNote = got>=4 ? "ok" : "partial"; saveMsg=""; saveCls=""; render();
+      pendingInput=res; ocrNote = mode==="table" ? (got>=4?"table":"table_partial") : (got>=4?"ok":"partial");
+      saveMsg=""; saveCls=""; render();
       var el=document.getElementById("in_kcal"); if(el) el.scrollIntoView({behavior:"smooth",block:"center"});
     }).catch(function(e){ if(worker){ try{ worker.terminate(); }catch(_){} } ocrErr("読み取りに失敗しました。通信環境を確認して、もう一度お試しください。"); });
   };
@@ -629,7 +711,10 @@ function runOCR(file){
   img.src=url;
 }
 document.getElementById("ocrFile").addEventListener("change",function(ev){
-  var f=ev.target.files&&ev.target.files[0]; ev.target.value=""; if(f) runOCR(f);
+  var f=ev.target.files&&ev.target.files[0]; ev.target.value=""; if(f) runOCR(f,"summary");
+});
+document.getElementById("tblFile").addEventListener("change",function(ev){
+  var f=ev.target.files&&ev.target.files[0]; ev.target.value=""; if(f) runOCR(f,"table");
 });
 
 /* ---------- events ---------- */
@@ -649,6 +734,7 @@ document.getElementById("app").addEventListener("click",function(ev){
     else if(a==="export") exportData();
     else if(a==="import") document.getElementById("importFile").click();
     else if(a==="ocr") document.getElementById("ocrFile").click();
+    else if(a==="ocrTable") document.getElementById("tblFile").click();
     return; }
   var day=ev.target.closest("[data-iso]");
   if(day){ selDate=day.getAttribute("data-iso"); saveMsg=""; saveCls=""; pendingInput=null; ocrNote=""; render(); }
