@@ -406,10 +406,10 @@ function renderMain(){
   var sel=state.entries[selDate];
   h+='<div class="h">入力する</div><div class="daysel">対象の日：<b>'+fmtJP(parseISO(selDate))+'</b>'+(selDate===todayISO?" ・今日":"")+'</div>';
   h+='<button class="ocrBtn" data-act="ocr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>栄養サマリーの写真から読み取る</button>';
-  h+='<button class="ocrBtn alt" data-act="ocrTable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14h18M14 4v16"/></svg>合計の表から読み取る</button>';
+  h+='<button class="ocrBtn alt" data-act="ocrTable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>AIの計算結果から読み取る</button>';
   if(ocrNote){
     if(ocrNote==="table"||ocrNote==="table_partial")
-      h+='<div class="ocrNote">表の「合計」列を読み取りました。各数字を必ず確認してください。'+(ocrNote==="table_partial"?'読み取れなかった項目は空欄のままなので、手で入れてください。':'')+'特に小数点の桁（例：20.9 と 209 の取り違え）にご注意を。</div>';
+      h+='<div class="ocrNote">AIの計算結果から読み取りました。各数字を必ず確認してください。'+(ocrNote==="table_partial"?'読み取れなかった項目は空欄のままなので、手で入れてください。':'')+'桁の取り違えがないかご確認を。</div>';
     else
       h+='<div class="ocrNote">写真から読み取りました。数字を確認して保存してください。'+(ocrNote==="partial"?'一部は読み取れなかったので、空欄は手で入れてください。':'')+'カロリーは読み間違いが起きやすいので、特にご確認を。</div>';
   }
@@ -664,6 +664,38 @@ function parseTable(words){
   });
   return res;
 }
+/* ---- list parser: 「ラベル：値」形式の箇条書きから読む ---- */
+function parseList(words){
+  var ws=[];
+  words.forEach(function(w){ var txt=(w.text||"").trim(); if(!txt) return; if(w.confidence!=null&&w.confidence<20) return;
+    var b=w.bbox||{x0:0,y0:0,x1:0,y1:0}; ws.push({cx:(b.x0+b.x1)/2,cy:(b.y0+b.y1)/2,h:b.y1-b.y0,text:txt}); });
+  if(!ws.length) return {};
+  ws.sort(function(a,b){return a.cy-b.cy;});
+  var hs=ws.map(function(w){return w.h;}).sort(function(a,b){return a-b;}); var medH=hs[Math.floor(hs.length/2)]||20;
+  var rows=[],cr=[];
+  ws.forEach(function(w){ if(cr.length&&(w.cy-cr[cr.length-1].cy)>medH*0.8){rows.push(cr);cr=[];} cr.push(w); });
+  if(cr.length)rows.push(cr);
+  var res={};
+  rows.forEach(function(r){
+    r.sort(function(a,b){return a.cx-b.cx;});
+    var numToks=r.filter(function(w){ return tblClean(w.text)!=null; });
+    if(numToks.length!==1) return;                 /* a real "ラベル：値" line has one number; table rows have several */
+    var val=tblClean(numToks[0].text); if(val==null) return;
+    var full=r.map(function(w){return w.text;}).join("");
+    var lab=normDigits(full).replace(/\d[\d.,]*\s*(kcal|g)?/ig,"");       /* drop number+unit */
+    lab=lab.replace(/[^0-9A-Za-z぀-ヿ一-鿿]/g,"").replace(/^[esES]+/,""); /* keep letters/kana/kanji, drop leading bullet */
+    var lf=tblLabel(lab);
+    if(lf&&lf!=="SKIP"&&res[lf]==null) res[lf]=val;
+  });
+  return res;
+}
+/* AI output can be a bullet list or a table — try list first, fall back to table. */
+function parseAI(words){
+  var a=parseList(words), ac=0; for(var k in a) ac++;
+  if(ac>=2) return a;
+  var b=parseTable(words), bc=0; for(var k in b) bc++;
+  return bc>ac ? b : a;
+}
 function ocrOverlay(){
   var o=document.createElement("div"); o.className="ov"; o.id="ocrOv";
   o.innerHTML='<div class="ovCard"><div class="ovTitle">写真を読み取り中…</div><div class="ovBar"><div class="ovFill" id="ovFill"></div></div><div class="ovPct" id="ovPct">準備中…</div></div>';
@@ -677,8 +709,8 @@ function ocrErr(msg){ var o=document.getElementById("ocrOv"); if(!o){ ocrOverlay
 function ocrClose(){ var o=document.getElementById("ocrOv"); if(o&&o.parentNode) o.parentNode.removeChild(o); }
 function runOCR(file,mode){
   mode=mode||"summary";
-  var targetW = mode==="table" ? 1200 : 1080;
-  var parser  = mode==="table" ? parseTable : parseOCR;
+  var targetW = mode==="table" ? 1000 : 1080;
+  var parser  = mode==="table" ? parseAI : parseOCR;
   ocrOverlay();
   var url=URL.createObjectURL(file), img=new Image();
   img.onload=function(){
